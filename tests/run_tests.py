@@ -211,8 +211,9 @@ class PannellumTester(object):
             if name.lower() == "firefox":
                 fp = webdriver.FirefoxProfile()
                 fp.set_preference("layout.css.devPixelsPerPx", "1.0")
+                service = webdriver.FirefoxService(log_path=log_path)
                 self.browser = webdriver.Firefox(
-                    service_log_path=log_path, firefox_profile=fp
+                    service=service, firefox_profile=fp
                 )
                 self.browser.set_window_size(800, 600)
             else:
@@ -220,8 +221,9 @@ class PannellumTester(object):
                 options.add_argument("headless")
                 options.add_argument("no-sandbox")
                 options.add_argument("window-size=800x600")
+                service = webdriver.ChromeService(log_path=log_path)
                 self.browser = webdriver.Chrome(
-                    service_log_path=log_path, options=options
+                    service=service, options=options
                 )
         return self.browser
 
