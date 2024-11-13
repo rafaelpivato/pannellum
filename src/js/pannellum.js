@@ -511,11 +511,20 @@ function onImageLoad() {
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('mouseup', onDocumentMouseUp, false);
         if (config.mouseZoom) {
-            uiContainer.addEventListener('mousewheel', onDocumentMouseWheel, false);
-            uiContainer.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            if (syncedTo) {
+                syncedTo.addEventListener('mousewheel', onDocumentMouseWheel, false);
+                syncedTo.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            } else {
+                uiContainer.addEventListener('mousewheel', onDocumentMouseWheel, false);
+                uiContainer.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            }
         }
         if (config.doubleClickZoom) {
-            dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
+            if (syncedTo) {
+                syncedTo.addEventListener('dblclick', onDocumentDoubleClick, false);
+            } else {
+                dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
+            }
         }
         container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
         container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
