@@ -54,6 +54,7 @@ var config,
     error = false,
     isTimedOut = false,
     listenersAdded = false,
+    syncedTo = null,
     panoImage,
     prevTime,
     speed = {'yaw': 0, 'pitch': 0, 'hfov': 0},
@@ -93,6 +94,7 @@ var defaultConfig = {
     autoRotate: false,
     autoRotateInactivityDelay: -1,
     autoRotateStopDelay: undefined,
+    syncedTo: undefined,
     type: 'equirectangular',
     northOffset: 0,
     showFullscreenCtrl: true,
@@ -148,7 +150,7 @@ defaultConfig.strings = {
 };
 
 // Initialize container
-container = typeof container === 'string' ? document.getElementById(container) : container;
+container = getElement(container);
 container.classList.add('pnlm-container');
 container.tabIndex = 0;
 
@@ -501,7 +503,11 @@ function onImageLoad() {
     // Only add event listeners once
     if (!listenersAdded) {
         listenersAdded = true;
-        dragFix.addEventListener('mousedown', onDocumentMouseDown, false);
+        if (syncedTo) {
+            syncedTo.addEventListener('mousedown', onDocumentMouseDown, false);
+        } else {
+            dragFix.addEventListener('mousedown', onDocumentMouseDown, false);
+        }
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('mouseup', onDocumentMouseUp, false);
         if (config.mouseZoom) {
@@ -530,14 +536,27 @@ function onImageLoad() {
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
         if (document.documentElement.style.pointerAction === '' &&
             document.documentElement.style.touchAction === '') {
-            dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
-            dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
-            dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
-            dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+            if (syncedTo) {
+                syncedTo.addEventListener('pointerdown', onDocumentPointerDown, false);
+                syncedTo.addEventListener('pointermove', onDocumentPointerMove, false);
+                syncedTo.addEventListener('pointerup', onDocumentPointerUp, false);
+                syncedTo.addEventListener('pointerleave', onDocumentPointerUp, false);
+            } else {
+                dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
+                dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
+                dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
+                dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+            }
         } else {
-            dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
-            dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
-            dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+            if (syncedTo) {
+                syncedTo.addEventListener('touchstart', onDocumentTouchStart, false);
+                syncedTo.addEventListener('touchmove', onDocumentTouchMove, false);
+                syncedTo.addEventListener('touchend', onDocumentTouchEnd, false);
+            } else {
+                dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
+                dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
+                dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+            }
         }
 
         // Deal with MS pointer events
@@ -764,7 +783,8 @@ function aboutMessage(event) {
  * @returns {Object} Calculated X and Y coordinates
  */
 function mousePosition(event) {
-    var bounds = container.getBoundingClientRect();
+    var target = syncedTo ? syncedTo : container;
+    var bounds = target.getBoundingClientRect();
     var pos = {};
     // pageX / pageY needed for iOS
     pos.x = (event.clientX || event.pageX) - bounds.left;
@@ -873,9 +893,9 @@ function onDocumentMouseMove(event) {
         moveHotSpot(draggingHotSpot, event);
     } else if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
-        var canvas = renderer.getCanvas();
-        var canvasWidth = canvas.clientWidth,
-            canvasHeight = canvas.clientHeight;
+        var target = syncedTo ? syncedTo : renderer.getCanvas();
+        var canvasWidth = target.clientWidth,
+            canvasHeight = target.clientHeight;
         var pos = mousePosition(event);
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / canvasWidth * 2 - 1) - Math.atan(pos.x / canvasWidth * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
@@ -2303,6 +2323,10 @@ function processOptions(isPreview) {
                 if (config[key])
                     startOrientation();
                 break;
+            
+            case 'syncedTo':
+                syncedTo = getElement(config[key]);
+                break;
         }
       }
     }
@@ -3374,6 +3398,18 @@ function fireEvent(type) {
             externalEventListeners[type][externalEventListeners[type].length - i].apply(null, [].slice.call(arguments, 1));
         }
     }
+}
+
+/**
+ * Get an element instance or by its id
+ * @private
+ * @param {HTMLElement|string} [ref] - Element id or instance.
+ * @returns {HTMLElement|null}
+ */
+function getElement(ref) {
+    if (typeof ref === undefined) return null;
+    if (typeof ref === 'string') return document.getElementById(ref);
+    return ref;
 }
 
 /**

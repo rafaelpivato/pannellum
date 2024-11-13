@@ -10,7 +10,7 @@ function anError(error, showHTML) {
     document.getElementById('container').appendChild(errorMsg);
 }
 
-var viewer;
+var viewer, synced;
 function parseURLParameters() {
     var URL;
     if (window.location.hash.length > 0) {
@@ -67,6 +67,7 @@ function parseURLParameters() {
             case 'fallback':
             case 'preview':
             case 'panorama':
+            case 'syncedTo':
             case 'config':
                 configFromURL[option] = decodeURIComponent(value);
                 break;
@@ -113,6 +114,10 @@ function parseURLParameters() {
             // Create viewer
             configFromURL.escapeHTML = true;
             viewer = pannellum.viewer('container', configFromURL);
+            if (document.getElementById('synced') !== null) {
+                synced = pannellum.viewer('synced', configFromURL)
+            } else {
+            }
         };
         request.open('GET', configFromURL.config);
         request.send();
@@ -127,6 +132,10 @@ function parseURLParameters() {
     configFromURL.escapeHTML = true;
     configFromURL.targetBlank = true;
     viewer = pannellum.viewer('container', configFromURL);
+    if (document.getElementById('synced') !== null) {
+        synced = pannellum.viewer('synced', configFromURL)
+    } else {
+    }
 }
 
 // Display error if opened from local file
