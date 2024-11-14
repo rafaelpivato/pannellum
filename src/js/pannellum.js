@@ -3396,6 +3396,71 @@ this.off = function(type, listener) {
 };
 
 /**
+ * Synchronize mouse events to the given target.
+ * @memberof Viewer
+ * @instance
+ * @param {HTMLElement|string|undefined|null} [ref] - Element instance or ID against which events will get bound to.
+ */
+this.syncTo = function(ref) {
+    if (listenersAdded) {
+
+        // Remove listeners for previous target
+        if (syncedTo) {
+            syncedTo.removeEventListener('mousedown', onDocumentMouseDown, false);
+            if (config.mouseZoom) {
+                syncedTo.removeEventListener('mousewheel', onDocumentMouseWheel, false);
+                syncedTo.removeEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            }
+            if (config.doubleClickZoom) {
+                syncedTo.removeEventListener('dblclick', onDocumentDoubleClick, false);
+            }
+            if (document.documentElement.style.pointerAction === '' &&
+                document.documentElement.style.touchAction === '') {
+                syncedTo.removeEventListener('pointerdown', onDocumentPointerDown, false);
+                syncedTo.removeEventListener('pointermove', onDocumentPointerMove, false);
+                syncedTo.removeEventListener('pointerup', onDocumentPointerUp, false);
+                syncedTo.removeEventListener('pointerleave', onDocumentPointerUp, false);
+            } else {
+                syncedTo.removeEventListener('touchstart', onDocumentTouchStart, false);
+                syncedTo.removeEventListener('touchmove', onDocumentTouchMove, false);
+                syncedTo.removeEventListener('touchend', onDocumentTouchEnd, false);
+            }
+        }
+
+        config.syncedTo = ref;
+        syncedTo = getElement(ref);
+
+        // Add new listeners
+        if (syncedTo) {
+            syncedTo.addEventListener('mousedown', onDocumentMouseDown, false);
+            if (config.mouseZoom) {
+                syncedTo.addEventListener('mousewheel', onDocumentMouseWheel, false);
+                syncedTo.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            }
+            if (config.doubleClickZoom) {
+                syncedTo.addEventListener('dblclick', onDocumentDoubleClick, false);
+            }
+            if (document.documentElement.style.pointerAction === '' &&
+                document.documentElement.style.touchAction === '') {
+                syncedTo.addEventListener('pointerdown', onDocumentPointerDown, false);
+                syncedTo.addEventListener('pointermove', onDocumentPointerMove, false);
+                syncedTo.addEventListener('pointerup', onDocumentPointerUp, false);
+                syncedTo.addEventListener('pointerleave', onDocumentPointerUp, false);
+            } else {
+                syncedTo.addEventListener('touchstart', onDocumentTouchStart, false);
+                syncedTo.addEventListener('touchmove', onDocumentTouchMove, false);
+                syncedTo.addEventListener('touchend', onDocumentTouchEnd, false);
+            }
+        }
+
+    } else {
+        // We'll just update the config if listeners were not added yet
+        config.syncedTo = ref;
+        syncedTo = getElement(ref);
+    }
+}
+
+/**
  * Fire listeners attached to specified event.
  * @private
  * @param {string} [type] - Type of event to fire listeners for.
