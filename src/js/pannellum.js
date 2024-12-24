@@ -808,6 +808,8 @@ function mousePosition(event) {
  * @param {MouseEvent} event - Document mouse down event.
  */
 function onDocumentMouseDown(event) {
+    // Ignore elements with 'pnlm-ignore' class
+    if (event.target.closest('.pnlm-ignore')) return;
     // Override default action
     event.preventDefault();
     // But not all of it
@@ -857,6 +859,9 @@ function onDocumentMouseDown(event) {
  * @param {MouseEvent} event - Document mouse down event.
  */
 function onDocumentDoubleClick(event) {
+    // Ignore elements with 'pnlm-ignore' class
+    if (event.target.closest('.pnlm-ignore')) return;
+
     if (config.minHfov === config.hfov) {
         _this.setHfov(origHfov, 1000);
     } else {
@@ -1166,6 +1171,9 @@ function onDocumentMouseWheel(event) {
     if (!loaded || (config.mouseZoom == 'fullscreenonly' && !fullscreenActive)) {
         return;
     }
+
+    // Ignore elements with 'pnlm-ignore' class
+    if (event.target.closest('.pnlm-ignore')) return;
 
     // Ctrl for zoom
     if (!fullscreenActive && config.mouseZoom == 'ctrl' && !event.ctrlKey) {
